@@ -1,13 +1,46 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <Windows.h>
 #include <conio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <vector>
 #include<mmsystem.h>
 #include <fstream>
-
+#include<string>
 using namespace std;
 
+#define CONSOLE_WIDTH 1280
+#define CONSOLE_HEIGHT 720
+//Keyboard
+#define ARROW_UP 72
+#define ARROW_DOWN 80
+#define ARROW_LEFT 75
+#define ARROW_RIGHT 77
+#define KEY_ENTER 13
+#define SPACE 32
+#define KEY_ESC 27
+
+struct _BufferInfo {
+    int col;
+    int row;
+};
+void menu();
+int Start_game(int& kq, int n, bool may);
+void End_game();
+void Save_game(int s[15][15], bool current);
+bool win(int s[15][15], int x, int y);
+void SET_COLOR(int color)
+{
+    WORD wColor;
+
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (GetConsoleScreenBufferInfo(hStdOut, &csbi))
+    {
+        wColor = (csbi.wAttributes & 0xF0) + (color & 0x0F);
+        SetConsoleTextAttribute(hStdOut, wColor);
+    }
+}
 void CreateConsoleWindow(int pWidth, int pHeight) {
     HWND consoleWindow = GetConsoleWindow();
     RECT r;
@@ -24,16 +57,25 @@ void FixConsoleWindow() {
     style = style & ~(WS_MAXIMIZEBOX) & ~(WS_THICKFRAME);
     SetWindowLong(consoleWindow, GWL_STYLE, style);
 }
-
-
+void HideCursor(bool visible)
+{
+    CONSOLE_CURSOR_INFO info;
+    info.dwSize = 100;
+    info.bVisible = visible;
+    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+}
+void SetColor(int color)
+{
+    HANDLE hConsole;
+    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, color);
+}
 void gotoXY(int x, int y) {
     COORD coord;
     coord.X = x;
     coord.Y = y;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
-
-
 void set_color(int color) {
     WORD wColor;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -50,7 +92,7 @@ int b_color(std::string c, int k) {
     std::cout << c;
     return 0;
 }
-/*
+
 BOOL ShowScrollBar(
     HWND hWnd,
     int  wBar,
@@ -61,13 +103,214 @@ void ShowScrollbar(BOOL Show)
     HWND hWnd = GetConsoleWindow();
     ShowScrollBar(hWnd, SB_BOTH, Show);
 }
-*/
 void resizeConsole(int width, int height)
 {
     HWND console = GetConsoleWindow();
     RECT r;
     GetWindowRect(console, &r);
     MoveWindow(console, r.left, r.top, width, height, TRUE);
+}
+_BufferInfo GetConsoleSize()
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    int columns, rows;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+    _BufferInfo bf = { columns, rows };
+    return bf;
+}
+vector<string> ReadFile(string filename)
+{
+    std::fstream textFile;
+    textFile.open(filename.c_str(), std::fstream::in);
+    string line;
+    std::vector<std::string> line1;
+    while (getline(textFile, line))
+        line1.push_back(line);
+    textFile.close();
+    return line1;
+}
+void DrawBox(int color, int width, int height, int x, int y, int delay)
+{
+    SetColor(color);
+    gotoXY(x, y);
+
+    for (int i = 0; i < width; i++)
+    {
+        cout << " ";
+    }
+    for (int i = 1; i <= height; i++)
+    {
+        Sleep(delay);
+        gotoXY(x, y + i);
+        cout << " ";
+        SetColor(14 * 16 + 14);
+        for (int j = 0; j < width - 2; j++)
+        {
+            cout << " ";
+        }
+        SetColor(color);
+        cout << " ";
+        SetColor(8 * 16 + 2);
+        cout << " ";
+        SetColor(color);
+    }
+    SetColor(color);
+    gotoXY(x, y + height + 1);
+    Sleep(delay);
+    for (int i = 0; i < width; i++)
+    {
+        cout << " ";
+    }
+    SetColor(8 * 16 + 2);
+    cout << " ";
+    for (int i = 1; i <= width; i++)
+    {
+        gotoXY(x + i, y + height + 2);
+        cout << " ";
+    }
+    SetColor(240);
+}
+void PrintText(string text, int color, int x, int y)
+{
+    gotoXY(x, y);
+    SetColor(color);
+    cout << text;
+    SetColor(240);
+}
+void DrawFromFile(string filename, int color, int x, int y)
+{
+    int tempY = y;
+    vector<string> line1 = ReadFile(filename);
+
+    if (filename == "XWin.txt" || filename == "OWin.txt" || filename == "Draw.txt" || filename == "PWin.txt" || filename == "PLose.txt")
+    {
+        int turn = 0;
+        while (1)
+        {
+            turn = turn % 4;
+            for (int i = 0; i < line1.size() / 4; i++)
+                PrintText(line1[i + 9 * turn], color + turn % 15, x, y++);
+            y = tempY;
+            Sleep(500);
+            turn++;
+            gotoXY(0, y);
+            PrintText("Press any key to skip...", 240, x + 40, y + 10);
+            if (_kbhit())
+            {
+                int kb = _getch();
+                system("cls");
+                break;
+            };
+        }
+    }
+    else
+    {
+        for (int i = 0; i < line1.size(); i++)
+        {
+            PrintText(line1[i], color, x, y);
+            y++;
+        }
+    }
+}
+void YesNoHighlight(int k)
+{
+    _BufferInfo bf = GetConsoleSize();
+    switch (k)
+    {
+    case 1:
+        DrawFromFile("Yes.txt", 7 * 16 + 12, (bf.col - 60) / 2, (bf.row - 20));
+        DrawFromFile("No.txt", 14 * 16 + 0, (bf.col + 15) / 2, (bf.row - 20));
+        break;
+    case 2:
+        DrawFromFile("Yes.txt", 14 * 16 + 0, (bf.col - 60) / 2, (bf.row - 20));
+        DrawFromFile("No.txt", 7 * 16 + 12, (bf.col + 15) / 2, (bf.row - 20));
+        break;
+    }
+}
+int AskContinueAction()
+{
+    _BufferInfo bf = GetConsoleSize();
+    DrawFromFile("Yes.txt", 7 * 16 + 12, (bf.col - 60) / 2, (bf.row - 20));
+    fflush(stdin);
+    int k = 1;
+    do
+    {
+        int cmd = toupper(_getch());
+        if ((cmd == 'D' || cmd == ARROW_RIGHT) && k < 2)
+        {
+            k++;
+            YesNoHighlight(k);
+        }
+        else if ((cmd == 'A' || cmd == ARROW_LEFT) && k > 1)
+        {
+            k--;
+            YesNoHighlight(k);
+        }
+        else if (cmd == KEY_ENTER)
+        {
+            return k;
+            break;
+        }
+    } while (1);
+}
+int AskContinueBox(bool may)
+{
+    int kq=0;
+    _BufferInfo bf = GetConsoleSize();
+    DrawBox(16, 100, 20, (bf.col - 100) / 2, (bf.row - 20) / 2, 50);
+
+    DrawFromFile("Continue.txt", 14 * 16 + 5, (bf.col - 80) / 2, (bf.row - 28));
+    DrawFromFile("Yes.txt", 14 * 16 + 0, (bf.col - 60) / 2, (bf.row - 20));
+    DrawFromFile("No.txt", 14 * 16 + 0, (bf.col + 15) / 2, (bf.row - 20));
+    int Action = AskContinueAction();
+    if (Action == 1) {
+        HideCursor(true);
+        return 1;
+    }
+    else if (Action == 2) {
+        HideCursor(true);
+        return 0;
+    }
+}
+int End_game(int kq, bool may)
+{
+    int a;
+    _BufferInfo bf = GetConsoleSize();
+    HideCursor(false);
+    switch (kq)
+    {
+    case 1:
+        system("cls");
+        DrawFromFile("XWin.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
+        a=AskContinueBox(may);
+        break;
+    case 0:
+        system("cls");
+        DrawFromFile("Draw.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
+        a= AskContinueBox(may);
+        break;
+    case -1:
+        system("cls");
+        DrawFromFile("OWin.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
+        a=AskContinueBox(may);
+        break;
+    case 2:
+        system("cls");
+        DrawFromFile("PWin.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
+        a=AskContinueBox(may);
+        break;
+    case -2:
+        system("cls");
+        DrawFromFile("PLose.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
+        a=AskContinueBox(may);
+        break;
+    default:
+        break;
+    }
+    HideCursor(true);
+    return a;
 }
 
 void ve_x_o(int n) //ve X va O
@@ -122,8 +365,8 @@ bool win(int s[15][15], int x, int y) //xac dinh thang thua
 }
 void Save_game(int s[15][15], bool current) //luu game
 {
-    ofstream input("D:\\codecpp\\input.txt", ios::app);
-    ofstream output("D:\\codecpp\\output.txt", ios::app);
+    ofstream input("input.txt", ios::app);
+    ofstream output("output.txt", ios::app);
     if (current == true) {
         gotoXY(70, 24); cout << "Press name: ";
         string ten;
@@ -141,7 +384,7 @@ void Save_game(int s[15][15], bool current) //luu game
 void Load_game(int n, int ss[15][15]) //tai game
 {
     int s[150][15];
-    ifstream output("D:\\codecpp\\output.txt");
+    ifstream output("output.txt");
     for (int i = 0; i < 15 * (n + 1); i++)
         for (int j = 0; j < 15; j++) output >> s[i][j];
     for (int i = 15 * n; i < 15 * n + 15; i++)
@@ -151,7 +394,7 @@ int f_load() //tuy chon tai game
 {
     gotoXY(41, 15);
     int z = 0;
-    ifstream input("D:\\codecpp\\input.txt");
+    ifstream input("input.txt");
     for (int i = 0; i < 10; i++) {
         string s;
         cout << "                            ";
@@ -171,9 +414,9 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
 {
     set_color(0);
     //ShowScrollbar(0);
-    gotoXY(0, 0);
+    gotoXY(1, 1);
     char key;
-    int x = 22, y = 6;
+    int x = 3, y = 1;
     int xx = 0, oo = 0; //dem luot di
     bool check = true;
     gotoXY(70, 23); cout << "Press Space to play again.";
@@ -210,15 +453,14 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
                     gotoXY(x + 4, y); x += 4;
                 }
                 else { gotoXY(x - 4, y); x -= 4; }
-                if (s[(x - 22) / 4][(y - 6) / 2] == 0) {
+                if (s[(x - 3) / 4][(y - 1) / 2] == 0) {
                     oo++;
                     gotoXY(70, 4); cout << "O: " << oo;
                     gotoXY(x, y);
-                    cout << 'O'; s[(x - 22) / 4][(y - 6) / 2] = -1;
-                    if (win(s, (x - 22) / 4, (y - 6) / 2) == true) {
-                        gotoXY(70, 25); cout << "You lose.";
-                        char keyy = _getch();
-                        return -1;
+                    cout << 'O'; s[(x - 3) / 4][(y - 1) / 2] = -1;
+                    if (win(s, (x - 3) / 4, (y - 1) / 2) == true) {
+                        Sleep(2000);
+                        return -2;
                     }
                     break;
                 }
@@ -233,22 +475,21 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
         key = _getch();
         if (key == 32) return 2;
         if (key == 8) { //luu game
-            Save_game(s, cur); break;
+            Save_game(s, cur); return 3;
         }
-        if (key == 97 && x > 22) { gotoXY(x - 4, y); x -= 4; }
-        if (key == 119 && y > 6) { gotoXY(x, y - 2); y -= 2; }
-        if (key == 100 && x < 76) { gotoXY(x + 4, y); x += 4; }
-        if (key == 115 && y < 34) { gotoXY(x, y + 2); y += 2; }
-        if (key == 13 && s[(x - 22) / 4][(y - 6) / 2] == 0) {
+        if (key == 97 && x > 3) { gotoXY(x - 4, y); x -= 4; }
+        if (key == 119 && y > 1) { gotoXY(x, y - 2); y -= 2; }
+        if (key == 100 && x < 59) { gotoXY(x + 4, y); x += 4; }
+        if (key == 115 && y < 29) { gotoXY(x, y + 2); y += 2; }
+        if (key == 13 && s[(x - 3) / 4][(y - 1) / 2] == 0) {
             check = !check;
             if (check == false) {
                 xx++;
                 gotoXY(70, 3); cout << "X: " << xx;
                 gotoXY(x, y);
-                cout << 'X'; s[(x - 22) / 4][(y - 6) / 2] = 1;
-                if (win(s, (x - 22) / 4, (y - 6) / 2) == true) { //xac dinh thang
-                    gotoXY(70, 25); cout << "X win.";
-                    char keyy = _getch();
+                cout << 'X'; s[(x - 3) / 4][(y - 1) / 2] = 1;
+                if (win(s, (x - 3) / 4, (y - 1) / 2) == true) { //xac dinh thang
+                    Sleep(2000);
                     return 1;
                 }
             }
@@ -256,10 +497,9 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
                 oo++;
                 gotoXY(70, 4); cout << "O: " << oo;
                 gotoXY(x, y);
-                cout << 'O'; s[(x - 22) / 4][(y - 6) / 2] = -1;
-                if (win(s, (x - 22) / 4, (y - 6) / 2) == true) { //xac dinh thang
-                    gotoXY(70, 25); cout << "O win.";
-                    char keyy = _getch();
+                cout << 'O'; s[(x - 3) / 4][(y - 1) / 2] = -1;
+                if (win(s, (x - 3) / 4, (y - 1) / 2) == true) { //xac dinh thang
+                    Sleep(2000);
                     return -1;
                 }
             }
@@ -334,7 +574,6 @@ void banggame() {
     bangphu();
 }
 
-
 int Start_game(int& kq, int n, bool may) //khoi dong game
 {
     CreateConsoleWindow(1200, 700);
@@ -346,7 +585,7 @@ int Start_game(int& kq, int n, bool may) //khoi dong game
         Load_game(n, s);
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
-                gotoXY(22 + j * 4, i * 2 + 6);
+                gotoXY(3 + j * 4, i * 2 + 1);
                 if (s[i][j] == 1) {
                     set_color(4);
                     cout << "X";
@@ -367,9 +606,9 @@ int Start_game(int& kq, int n, bool may) //khoi dong game
         for (int j = 0; j < 15; j++) s[i][j] = ss[i][j];
     while (1) { //vong lap choi game
         kq = dogame(s, true, may);
-        gotoXY(70, 28); cout << "Press Enter to play again.";
-        char key = _getch();
-        if (key == 13 || key == 32) {
+        if (kq == 2 || kq == 3) return kq;
+        int a=End_game(kq, may);
+        if (a==1) {
             n = -1;
             for (int i = 0; i < 15; i++)
                 for (int j = 0; j < 15; j++) s[i][j] = 0;
@@ -377,7 +616,7 @@ int Start_game(int& kq, int n, bool may) //khoi dong game
             banggame();
             continue;
         }
-        else if (key == 27) return kq;
+        else return kq;
     }
 }
 
@@ -621,31 +860,3 @@ int main() {
     }
     return 0;
 }
-
-
-/* set_color(0);
-    char s = 205;
-    char c = 215;
-    for (int i = 0; i <= 36; i++)
-    {
-        for (int j = 0; j <= 36; j++)
-        {
-            if (i < 4) printf(" ");
-            else if ((i == 4 || i == 36) && (j >= 20 && j <= 34)) cout << s << s << s << s;
-            else if ((i == 4 || i == 36) && (j == 35)) cout << s;
-            else if ((j == 19 || j == 36) && (i >= 4 && i <= 36)) cout << c;
-            else if (j < 20) printf(" ");
-            else if (i % 2 == 1 && j < 35)  printf("%c%c%c%c", 197, 196, 196, 196);
-            else if (i % 2 == 0 && j < 35) printf("%c   ", 179);
-            else if (i % 2 == 1 && j == 35) printf("%c", 197);
-            else if (i % 2 == 0 && j == 35) printf("%c", 179);
-        }
-        printf("\n");
-    }
-    for (int i = 0; i < 22; i++) {
-        gotoXY(89, 4 + i); cout << c; for (int i = 0; i < 43; i++) cout << " ";
-        cout << c << "\n";
-    }
-    gotoXY(90, 4); for (int i = 0; i < 43; i++) cout << s;
-    gotoXY(90, 15); for (int i = 0; i < 43; i++) cout << '_';
-    gotoXY(90, 25); for (int i = 0; i < 43; i++) cout << s;*/
