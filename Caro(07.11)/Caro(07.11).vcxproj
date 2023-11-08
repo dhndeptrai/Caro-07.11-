@@ -129,6 +129,21 @@
   <ItemGroup>
     <ClCompile Include="Caro(07.11).cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\..\..\Desktop\input.txt" />
+    <Text Include="..\..\..\..\Desktop\output.txt" />
+    <Text Include="D:\endgamefiles\Continue.txt" />
+    <Text Include="D:\endgamefiles\Draw.txt" />
+    <Text Include="D:\endgamefiles\No.txt" />
+    <Text Include="D:\endgamefiles\OWin.txt" />
+    <Text Include="D:\endgamefiles\PLose.txt" />
+    <Text Include="D:\endgamefiles\PWin.txt" />
+    <Text Include="D:\endgamefiles\XWin.txt" />
+    <Text Include="D:\endgamefiles\Yes.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="..\..\..\..\Music\01.-Main-Menu.wav" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

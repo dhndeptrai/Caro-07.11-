@@ -257,7 +257,7 @@ int AskContinueAction()
 }
 int AskContinueBox(bool may)
 {
-    int kq=0;
+    int kq = 0;
     _BufferInfo bf = GetConsoleSize();
     DrawBox(16, 100, 20, (bf.col - 100) / 2, (bf.row - 20) / 2, 50);
 
@@ -284,27 +284,27 @@ int End_game(int kq, bool may)
     case 1:
         system("cls");
         DrawFromFile("XWin.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
-        a=AskContinueBox(may);
+        a = AskContinueBox(may);
         break;
     case 0:
         system("cls");
         DrawFromFile("Draw.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
-        a= AskContinueBox(may);
+        a = AskContinueBox(may);
         break;
     case -1:
         system("cls");
         DrawFromFile("OWin.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
-        a=AskContinueBox(may);
+        a = AskContinueBox(may);
         break;
     case 2:
         system("cls");
         DrawFromFile("PWin.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
-        a=AskContinueBox(may);
+        a = AskContinueBox(may);
         break;
     case -2:
         system("cls");
         DrawFromFile("PLose.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
-        a=AskContinueBox(may);
+        a = AskContinueBox(may);
         break;
     default:
         break;
@@ -390,21 +390,62 @@ void Load_game(int n, int ss[15][15]) //tai game
     for (int i = 15 * n; i < 15 * n + 15; i++)
         for (int j = 0; j < 15; j++) ss[j][i - 15 * n] = s[i][j];
 }
+
+void line_up(int x, int y, int w) {
+    for (int i = x; i <= x + w; i++) {
+        gotoXY(i, y);
+        printf("%c", char(196));
+    }
+    gotoXY(x, y); printf("%c", char(218));
+    gotoXY(x + w, y); printf("%c", char(191));
+    gotoXY(x, y + 1); printf("%c", char(179));
+    gotoXY(x + w, y + 1); printf("%c", char(179));
+}
+void line_bot(int x, int y, int w) {
+    for (int i = x; i <= x + w; i++) {
+        gotoXY(i, y);
+        printf("%c", char(196));
+    }
+    gotoXY(x, y); printf("%c", char(195));
+    gotoXY(x + w, y); printf("%c", char(180));
+    gotoXY(x, y + 1); printf("%c", char(179));
+    gotoXY(x + w, y + 1); printf("%c", char(179));
+}
+void line_down(int x, int y, int w) {
+    for (int i = x; i <= x + w; i++) {
+        gotoXY(i, y);
+        printf("%c", char(196));
+    }
+    gotoXY(x, y); printf("%c", char(192));
+    gotoXY(x + w, y); printf("%c", char(217));
+}
+void bangchon() {
+    line_up(43, 15, 30);
+    line_bot(43, 17, 30);
+    line_bot(43, 19, 30);
+    line_bot(43, 21, 30);
+    line_bot(43, 23, 30);
+    line_bot(43, 25, 30);
+    line_bot(43, 27, 30);
+    line_down(43, 29, 30);
+}
 int f_load() //tuy chon tai game
 {
-    gotoXY(41, 15);
+    system("cls");
     int z = 0;
     ifstream input("input.txt");
     for (int i = 0; i < 10; i++) {
         string s;
-        cout << "                            ";
-        gotoXY(41, 15 + i * 2);
+        line_up(35, 2, 40);
+        for (int j = 4; j <= 20; j += 2) line_bot(35, j, 40);
+        line_down(35, 22, 40);
+        gotoXY(41, 3 + i * 2);
         input >> s; if (s.size() == 0) continue;
         z++;
         cout << i << ". "; cout << s;
-        gotoXY(41, 17 + i * 2);
+        gotoXY(41, 5 + i * 2);
     }
-    gotoXY(41, 13); cout << "Press from 0 to " << z - 1 << " to choose game.";
+    gotoXY(41, 1); cout << "Press from 0 to " << z - 1 << " to choose game.";
     char key = _getch();
     if (key >= 48 && key < 48 + z) return (key - 48);
     else return -1;
@@ -459,7 +500,7 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
                     gotoXY(x, y);
                     cout << 'O'; s[(x - 3) / 4][(y - 1) / 2] = -1;
                     if (win(s, (x - 3) / 4, (y - 1) / 2) == true) {
-                        Sleep(2000);
+                        Sleep(500);
                         return -2;
                     }
                     break;
@@ -489,7 +530,7 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
                 gotoXY(x, y);
                 cout << 'X'; s[(x - 3) / 4][(y - 1) / 2] = 1;
                 if (win(s, (x - 3) / 4, (y - 1) / 2) == true) { //xac dinh thang
-                    Sleep(2000);
+                    Sleep(500);
                     return 1;
                 }
             }
@@ -499,7 +540,7 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
                 gotoXY(x, y);
                 cout << 'O'; s[(x - 3) / 4][(y - 1) / 2] = -1;
                 if (win(s, (x - 3) / 4, (y - 1) / 2) == true) { //xac dinh thang
-                    Sleep(2000);
+                    Sleep(500);
                     return -1;
                 }
             }
@@ -514,24 +555,30 @@ void bangphu() {
     gotoXY(63, 0); printf("%c", char(201));
     for (int i = 1; i <= 50; i++) printf("%c", char(205));
     printf("%c", char(187));
+    Sleep(10);
     for (int j = 1; j <= 18; j++) {
         gotoXY(63, j); printf("%c", char(186));
         gotoXY(114, j); printf("%c", char(186));
+        Sleep(10);
     }
     gotoXY(63, 19); printf("%c", char(200));
     for (int i = 1; i <= 50; i++) printf("%c", char(205));
     printf("%c", char(188));
+    Sleep(10);
 
     gotoXY(63, 20); printf("%c", char(201));
     for (int i = 1; i <= 50; i++) printf("%c", char(205));
     printf("%c", char(187));
+    Sleep(10);
     for (int j = 21; j <= 29; j++) {
         gotoXY(63, j); printf("%c", char(186));
         gotoXY(114, j); printf("%c", char(186));
+        Sleep(10);
     }
     gotoXY(63, 30); printf("%c", char(200));
     for (int i = 1; i <= 50; i++) printf("%c", char(205));
     printf("%c", char(188));
+    Sleep(10);
 }
 void banggame() {
     set_color(0);
@@ -607,8 +654,8 @@ int Start_game(int& kq, int n, bool may) //khoi dong game
     while (1) { //vong lap choi game
         kq = dogame(s, true, may);
         if (kq == 2 || kq == 3) return kq;
-        int a=End_game(kq, may);
-        if (a==1) {
+        int a = End_game(kq, may);
+        if (a == 1) {
             n = -1;
             for (int i = 0; i < 15; i++)
                 for (int j = 0; j < 15; j++) s[i][j] = 0;
@@ -648,46 +695,6 @@ void dongchuchinh() {
     printf("   _/_/_/         _/_/_/"); set_color(1); printf("    _/_/_/           _/_/_/"); set_color(2); printf("        _/_/                "); set_color(6); printf("_/_/_/                  _/_/_/\n"); set_color(4);
     printf("   _/_/_/_/_/_/_/_/_/_/"); set_color(1); printf("      _/_/_/_/_/_/_/_/_/_/_/"); set_color(2); printf("       _/_/                  "); set_color(6); printf("_/_/_/_/_/_/_/_/_/_/_/_/_/\n"); set_color(4);
     printf("    _/_/_/_/_/_/_/_/_/"); set_color(1); printf("        _/_/_/_/_/_/_/_/_/_/_/_/"); set_color(2); printf("   _/_/                    "); set_color(6); printf("_/_/_/_/_/_/_/_/_/_/_/\n"); set_color(4);
-}
-
-void line_up(int x, int y, int w) {
-    for (int i = x; i <= x + w; i++) {
-        gotoXY(i, y);
-        printf("%c", char(196));
-    }
-    gotoXY(x, y); printf("%c", char(218));
-    gotoXY(x + w, y); printf("%c", char(191));
-    gotoXY(x, y + 1); printf("%c", char(179));
-    gotoXY(x + w, y + 1); printf("%c", char(179));
-}
-void line_bot(int x, int y, int w) {
-    for (int i = x; i <= x + w; i++) {
-        gotoXY(i, y);
-        printf("%c", char(196));
-    }
-    gotoXY(x, y); printf("%c", char(195));
-    gotoXY(x + w, y); printf("%c", char(180));
-    gotoXY(x, y + 1); printf("%c", char(179));
-    gotoXY(x + w, y + 1); printf("%c", char(179));
-}
-void line_down(int x, int y, int w) {
-    for (int i = x; i <= x + w; i++) {
-        gotoXY(i, y);
-        printf("%c", char(196));
-    }
-    gotoXY(x, y); printf("%c", char(192));
-    gotoXY(x + w, y); printf("%c", char(217));
-}
-
-void bangchon() {
-    line_up(43, 15, 30);
-    line_bot(43, 17, 30);
-    line_bot(43, 19, 30);
-    line_bot(43, 21, 30);
-    line_bot(43, 23, 30);
-    line_bot(43, 25, 30);
-    line_bot(43, 27, 30);
-    line_down(43, 29, 30);
 }
 
 
