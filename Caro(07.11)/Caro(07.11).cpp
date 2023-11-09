@@ -93,6 +93,22 @@ int b_color(std::string c, int k) {
     return 0;
 }
 
+
+void HideCursor() {
+    CONSOLE_CURSOR_INFO Info;
+    Info.bVisible = FALSE;
+    Info.dwSize = 20;
+    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
+}
+void ShowCursor()
+{
+    CONSOLE_CURSOR_INFO Info;
+    Info.bVisible = TRUE;
+    Info.dwSize = 20;
+    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
+}
+
+
 BOOL ShowScrollBar(
     HWND hWnd,
     int  wBar,
@@ -682,6 +698,7 @@ int blink_text(int x, int y, std::string(c)) {
 
 void dongchuchinh() {
     set_color(4);
+    gotoXY(0, 0);
     printf("\n               _/_/_/_/_/_/_/_/_ \n");
     printf("            _/_/_/_/_/_/_/_/_/_/_ \n");
     printf("           _/_/_/             _/_/\n");
@@ -714,6 +731,7 @@ void _help() {
     printf("\n\n\t\tHAVE FUN!");
     printf("\n\n\n\n\n\t\t\t\t\t\t\t\t(Press any key to go back)");
     _getch();
+    system("cls");
 }
 
 void _about() {
@@ -725,6 +743,7 @@ void _about() {
     printf("\n\n\t\t\t\tStudent 4: 23122027_Vo Ngoc Hieu");
     printf("\n\n\t\t\t\tInstructor: Mr. Truong Toan Thinh");
     _getch();
+    system("cls");
 }
 
 int cn = 1;
@@ -782,6 +801,9 @@ void text_with_bg() {
 
     if (cn == 7) {
         gotoXY(44, 28); b_color(">>>          EXIT         <<<", 78);
+        HANDLE hConsoleColor;
+        hConsoleColor = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleTextAttribute(hConsoleColor, 240);
     }
     if (cn != 7) {
         gotoXY(44, 28); b_color("             EXIT            ", 240);
@@ -791,12 +813,13 @@ void text_with_bg() {
 
 void menu() {
     int kq, temp;
-    system("cls");
+    text_with_bg();
     dongchuchinh();
     bangchon();
-    text_with_bg();
+    HideCursor();
     int t = _getch();
     if (t == 13) {				//nhan enter
+        ShowCursor();
         switch (cn) {
         case 1:
             blink_text(49, 16, "PLAYER VS COMPUTER");
