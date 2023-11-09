@@ -94,13 +94,13 @@ int b_color(std::string c, int k) {
 }
 
 
-void HideCursor() {
+void AnConTro() {
     CONSOLE_CURSOR_INFO Info;
     Info.bVisible = FALSE;
     Info.dwSize = 20;
     SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
 }
-void ShowCursor()
+void HienConTro()
 {
     CONSOLE_CURSOR_INFO Info;
     Info.bVisible = TRUE;
@@ -282,10 +282,12 @@ int AskContinueBox(bool may)
     DrawFromFile("No.txt", 14 * 16 + 0, (bf.col + 15) / 2, (bf.row - 20));
     int Action = AskContinueAction();
     if (Action == 1) {
+        system("cls");
         HideCursor(true);
         return 1;
     }
     else if (Action == 2) {
+        system("cls");
         HideCursor(true);
         return 0;
     }
@@ -816,10 +818,10 @@ void menu() {
     text_with_bg();
     dongchuchinh();
     bangchon();
-    HideCursor();
+    AnConTro();
     int t = _getch();
     if (t == 13) {				//nhan enter
-        ShowCursor();
+        HienConTro();
         switch (cn) {
         case 1:
             blink_text(49, 16, "PLAYER VS COMPUTER");
