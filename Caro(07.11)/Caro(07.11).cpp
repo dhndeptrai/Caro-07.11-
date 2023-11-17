@@ -58,7 +58,6 @@ void FixConsoleWindow() {
     style = style & ~(WS_MAXIMIZEBOX) & ~(WS_THICKFRAME);
     SetWindowLong(consoleWindow, GWL_STYLE, style);
 }
-
 void Ancontro()
 {
     CONSOLE_CURSOR_INFO Info;
@@ -66,7 +65,6 @@ void Ancontro()
     Info.dwSize = 20;
     SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
 }
-
 void Hiencontro()
 {
     CONSOLE_CURSOR_INFO Info;
@@ -74,7 +72,6 @@ void Hiencontro()
     Info.dwSize = 20;
     SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
 }
-
 void HideCursor(bool visible)
 {
     CONSOLE_CURSOR_INFO info;
@@ -110,22 +107,6 @@ int b_color(std::string c, int k) {
     std::cout << c;
     return 0;
 }
-
-
-void AnConTro() {
-    CONSOLE_CURSOR_INFO Info;
-    Info.bVisible = FALSE;
-    Info.dwSize = 20;
-    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
-}
-void HienConTro()
-{
-    CONSOLE_CURSOR_INFO Info;
-    Info.bVisible = TRUE;
-    Info.dwSize = 20;
-    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
-}
-
 
 BOOL ShowScrollBar(
     HWND hWnd,
