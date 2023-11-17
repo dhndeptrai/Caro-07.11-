@@ -1,3 +1,4 @@
+#pragma comment(lib,"winmm.lib")
 #include <stdio.h>
 #include <Windows.h>
 #include <conio.h>
@@ -57,6 +58,23 @@ void FixConsoleWindow() {
     style = style & ~(WS_MAXIMIZEBOX) & ~(WS_THICKFRAME);
     SetWindowLong(consoleWindow, GWL_STYLE, style);
 }
+
+void Ancontro()
+{
+    CONSOLE_CURSOR_INFO Info;
+    Info.bVisible = FALSE;
+    Info.dwSize = 20;
+    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
+}
+
+void Hiencontro()
+{
+    CONSOLE_CURSOR_INFO Info;
+    Info.bVisible = TRUE;
+    Info.dwSize = 20;
+    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
+}
+
 void HideCursor(bool visible)
 {
     CONSOLE_CURSOR_INFO info;
@@ -394,9 +412,6 @@ void Save_game(int s[15][15], bool current) //luu game
             output << "\n";
         }
     }
-    else {
-
-    }
     input.close();
 }
 void Load_game(int n, int ss[15][15]) //tai game
@@ -466,9 +481,35 @@ int f_load() //tuy chon tai game
     gotoXY(41, 1); cout << "Press from 0 to " << z - 1 << " to choose game.";
     char key = _getch();
     if (key >= 48 && key < 48 + z) return (key - 48);
-    else return -1;
+    else {
+        system("cls");
+        return -1;
+    }
 }
-
+void nhapnhay(int s[15][15])
+{
+    int x = 0;
+    while (x < 5) {
+        for (int i = 0; i < 15; i++)
+            for (int j = 0; j < 15; j++) if (win(s, i, j) == true) {
+                gotoXY(i * 4 + 3, j * 2 + 1); cout << " ";
+            }
+        Sleep(100);
+        for (int i = 0; i < 15; i++)
+            for (int j = 0; j < 15; j++) if (win(s, i, j) == true) {
+                if (s[i][j] == 1) {
+                    gotoXY(i * 4 + 3, j * 2 + 1);
+                    set_color(4); cout << "X";
+                }
+                else if (s[i][j] == -1) {
+                    gotoXY(i * 4 + 3, j * 2 + 1);
+                    set_color(1); cout << "O";
+                }
+            }
+        Sleep(100);
+        x++;
+    }
+}
 int dogame(int s[15][15], bool cur, bool may) //thuc hien game
 {
     set_color(0);
@@ -477,9 +518,7 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
     char key;
     int x = 3, y = 1;
     int xx = 0, oo = 0; //dem luot di
-    bool check = true;
-    gotoXY(70, 23); cout << "Press Space to play again.";
-    gotoXY(70, 27); cout << "Press ESC 2 times to return to menu.";
+    bool check = cur;
     for (int i = 0; i < 15; i++) // tai thong tin game (neu la load game)
         for (int j = 0; j < 15; j++)
             if (s[i][j] == -1 || s[i][j] == 1) {
@@ -518,7 +557,7 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
                     gotoXY(x, y);
                     cout << 'O'; s[(x - 3) / 4][(y - 1) / 2] = -1;
                     if (win(s, (x - 3) / 4, (y - 1) / 2) == true) {
-                        Sleep(500);
+                        nhapnhay(s);
                         return -2;
                     }
                     break;
@@ -534,7 +573,7 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
         key = _getch();
         if (key == 32) return 2;
         if (key == 8) { //luu game
-            Save_game(s, cur); return 3;
+            Save_game(s, true); return 3;
         }
         if (key == 97 && x > 3) { gotoXY(x - 4, y); x -= 4; }
         if (key == 119 && y > 1) { gotoXY(x, y - 2); y -= 2; }
@@ -542,23 +581,23 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
         if (key == 115 && y < 29) { gotoXY(x, y + 2); y += 2; }
         if (key == 13 && s[(x - 3) / 4][(y - 1) / 2] == 0) {
             check = !check;
-            if (check == false) {
+            if (check == false) { //nuoc di cua X
                 xx++;
                 gotoXY(70, 3); cout << "X: " << xx;
                 gotoXY(x, y);
                 cout << 'X'; s[(x - 3) / 4][(y - 1) / 2] = 1;
                 if (win(s, (x - 3) / 4, (y - 1) / 2) == true) { //xac dinh thang
-                    Sleep(500);
+                    nhapnhay(s);
                     return 1;
                 }
             }
-            else if (may == true) {
+            else if (may == true) { // nuoc di cua O
                 oo++;
                 gotoXY(70, 4); cout << "O: " << oo;
                 gotoXY(x, y);
                 cout << 'O'; s[(x - 3) / 4][(y - 1) / 2] = -1;
                 if (win(s, (x - 3) / 4, (y - 1) / 2) == true) { //xac dinh thang
-                    Sleep(500);
+                    nhapnhay(s);
                     return -1;
                 }
             }
@@ -641,9 +680,9 @@ void banggame() {
 
 int Start_game(int& kq, int n, bool may) //khoi dong game
 {
-    CreateConsoleWindow(1200, 700);
     FixConsoleWindow();
-    int s[15][15] = {};
+    int s[15][15] = {}, x = 0, o = 0;
+    bool cur = true;
     system("cls");
     banggame();
     if (n > -1) { //tai game (neu co)
@@ -670,11 +709,19 @@ int Start_game(int& kq, int n, bool may) //khoi dong game
     for (int i = 0; i < 15; i++)
         for (int j = 0; j < 15; j++) s[i][j] = ss[i][j];
     while (1) { //vong lap choi game
-        kq = dogame(s, true, may);
-        if (kq == 2 || kq == 3) return kq;
+        gotoXY(90, 5); cout << "Player X win: " << x; //dem so lan X win
+        gotoXY(90, 7); cout << "Player O win: " << o; //dem so lan O win
+        gotoXY(70, 23); cout << "Press Space to play again.";
+        gotoXY(70, 27); cout << "Press ESC to return to menu.";
+        kq = dogame(s, cur, may);
+        if (kq == 1) x++; else if (kq < 0) o++;
+        if (kq == 2 || kq == 3) {
+            system("cls");
+            return kq;
+        }
         int a = End_game(kq, may);
         if (a == 1) {
-            n = -1;
+            n = -1; cur = !cur;
             for (int i = 0; i < 15; i++)
                 for (int j = 0; j < 15; j++) s[i][j] = 0;
             system("cls");
@@ -719,7 +766,10 @@ void dongchuchinh() {
 
 //MỤC 4. SOUND
 int a_th = 1;
-
+void _sound() {
+    if (a_th == 1) PlaySound(TEXT("01.-Main-Menu.wav"), NULL, SND_ASYNC | SND_LOOP);
+    else PlaySound(NULL, NULL, SND_ASYNC);
+}
 
 //MỤC 5. HELP
 void _help() {
@@ -846,12 +896,12 @@ void menu() {
             case 0:
                 blink_text(53, 22, "SOUND: OFF");
                 a_th = 1;
-
+                _sound();
                 break;
             case 1:
                 blink_text(53, 22, "SOUND:  ON");
                 a_th = 0;
-
+                _sound();
                 break;
             }
             break;
@@ -885,8 +935,9 @@ void menu() {
 }
 
 int main() {
-    CreateConsoleWindow(1200, 700);
+    CreateConsoleWindow(1100, 700);
     FixConsoleWindow();
+    _sound();
     while (1) {
         menu();
     }
