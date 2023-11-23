@@ -1,3 +1,6 @@
 group7.1
 gak
 f
+1
+a
+ƒ

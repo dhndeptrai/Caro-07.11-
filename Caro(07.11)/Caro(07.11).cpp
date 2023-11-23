@@ -135,6 +135,15 @@ _BufferInfo GetConsoleSize()
     _BufferInfo bf = { columns, rows };
     return bf;
 }
+//MỤC 4. SOUND
+int a_th;
+void _sound() {
+    if (a_th == 1) PlaySound(TEXT("01.-Main-Menu.wav"), NULL, SND_ASYNC | SND_LOOP);
+    else if (a_th == 2) PlaySound(TEXT("win.wav"), NULL, SND_ASYNC);
+    else if (a_th == 3) PlaySound(TEXT("lose.wav"), NULL, SND_ASYNC);
+    else if (a_th == 4)PlaySound(TEXT("draw.wav"), NULL, SND_ASYNC);
+    else PlaySound(NULL, NULL, SND_ASYNC);
+}
 vector<string> ReadFile(string filename)
 {
     std::fstream textFile;
@@ -255,11 +264,15 @@ int AskContinueAction()
         int cmd = toupper(_getch());
         if ((cmd == 'D' || cmd == ARROW_RIGHT) && k < 2)
         {
+            a_th = 4;
+            _sound();
             k++;
             YesNoHighlight(k);
         }
         else if ((cmd == 'A' || cmd == ARROW_LEFT) && k > 1)
         {
+            a_th = 4;
+            _sound();
             k--;
             YesNoHighlight(k);
         }
@@ -281,11 +294,15 @@ int AskContinueBox(bool may)
     DrawFromFile("No.txt", 14 * 16 + 0, (bf.col + 15) / 2, (bf.row - 20));
     int Action = AskContinueAction();
     if (Action == 1) {
+        a_th = 1;
+        _sound();
         system("cls");
         HideCursor(true);
         return 1;
     }
     else if (Action == 2) {
+        a_th = 1;
+        _sound();
         system("cls");
         HideCursor(true);
         return 0;
@@ -293,32 +310,43 @@ int AskContinueBox(bool may)
 }
 int End_game(int kq, bool may)
 {
+    
     int a;
     _BufferInfo bf = GetConsoleSize();
     HideCursor(false);
     switch (kq)
     {
     case 1:
+        a_th = 2;
+        _sound();
         system("cls");
         DrawFromFile("XWin.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
         a = AskContinueBox(may);
         break;
     case 0:
+        a_th = 4;
+        _sound();
         system("cls");
         DrawFromFile("Draw.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
         a = AskContinueBox(may);
         break;
     case -1:
+        a_th = 3;
+        _sound();
         system("cls");
         DrawFromFile("OWin.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
         a = AskContinueBox(may);
         break;
     case 2:
+        a_th = 2;
+        _sound();
         system("cls");
         DrawFromFile("PWin.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
         a = AskContinueBox(may);
         break;
     case -2:
+        a_th = 3;
+        _sound();
         system("cls");
         DrawFromFile("PLose.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
         a = AskContinueBox(may);
@@ -583,7 +611,9 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
                 }
             }
         }
-        if (key == 27) return 2; //thoat game
+        if (key == 27) {
+            return 2;
+        } //thoat game
     }
 }
 
@@ -745,12 +775,6 @@ void dongchuchinh() {
 }
 
 
-//MỤC 4. SOUND
-int a_th = 1;
-void _sound() {
-    if (a_th == 1) PlaySound(TEXT("01.-Main-Menu.wav"), NULL, SND_ASYNC | SND_LOOP);
-    else PlaySound(NULL, NULL, SND_ASYNC);
-}
 
 //MỤC 5. HELP
 void _help() {
@@ -849,10 +873,10 @@ void menu() {
     text_with_bg();
     dongchuchinh();
     bangchon();
-    AnConTro();
+    Ancontro();
     int t = _getch();
     if (t == 13) {				//nhan enter
-        HienConTro();
+        Hiencontro();
         switch (cn) {
         case 1:
             blink_text(49, 16, "PLAYER VS COMPUTER");
@@ -916,6 +940,8 @@ void menu() {
 }
 
 int main() {
+    a_th = 1;
+    _sound();
     CreateConsoleWindow(1100, 700);
     FixConsoleWindow();
     _sound();
