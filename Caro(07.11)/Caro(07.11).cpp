@@ -1,4 +1,3 @@
-#pragma comment(lib,"winmm.lib")
 #include <stdio.h>
 #include <Windows.h>
 #include <conio.h>
@@ -8,6 +7,7 @@
 #include<mmsystem.h>
 #include <fstream>
 #include<string>
+#pragma comment(lib,"winmm.lib")
 using namespace std;
 
 #define CONSOLE_WIDTH 1280
@@ -26,7 +26,7 @@ struct _BufferInfo {
     int row;
 };
 void menu();
-int Start_game(int& kq, int n, bool may);
+void Start_game(int& kq, int n, bool may);
 void End_game();
 void Save_game(int s[15][15], bool current);
 bool win(int s[15][15], int x, int y);
@@ -57,20 +57,6 @@ void FixConsoleWindow() {
     LONG style = GetWindowLong(consoleWindow, GWL_STYLE);
     style = style & ~(WS_MAXIMIZEBOX) & ~(WS_THICKFRAME);
     SetWindowLong(consoleWindow, GWL_STYLE, style);
-}
-void Ancontro()
-{
-    CONSOLE_CURSOR_INFO Info;
-    Info.bVisible = FALSE;
-    Info.dwSize = 20;
-    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
-}
-void Hiencontro()
-{
-    CONSOLE_CURSOR_INFO Info;
-    Info.bVisible = TRUE;
-    Info.dwSize = 20;
-    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
 }
 void HideCursor(bool visible)
 {
@@ -108,6 +94,22 @@ int b_color(std::string c, int k) {
     return 0;
 }
 
+
+void Ancontro() {
+    CONSOLE_CURSOR_INFO Info;
+    Info.bVisible = FALSE;
+    Info.dwSize = 20;
+    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
+}
+void Hiencontro()
+{
+    CONSOLE_CURSOR_INFO Info;
+    Info.bVisible = TRUE;
+    Info.dwSize = 20;
+    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &Info);
+}
+
+
 BOOL ShowScrollBar(
     HWND hWnd,
     int  wBar,
@@ -135,7 +137,6 @@ _BufferInfo GetConsoleSize()
     _BufferInfo bf = { columns, rows };
     return bf;
 }
-//MỤC 4. SOUND
 int a_th;
 void _sound() {
     if (a_th == 1) PlaySound(TEXT("01.-Main-Menu.wav"), NULL, SND_ASYNC | SND_LOOP);
@@ -264,15 +265,11 @@ int AskContinueAction()
         int cmd = toupper(_getch());
         if ((cmd == 'D' || cmd == ARROW_RIGHT) && k < 2)
         {
-            a_th = 4;
-            _sound();
             k++;
             YesNoHighlight(k);
         }
         else if ((cmd == 'A' || cmd == ARROW_LEFT) && k > 1)
         {
-            a_th = 4;
-            _sound();
             k--;
             YesNoHighlight(k);
         }
@@ -310,7 +307,7 @@ int AskContinueBox(bool may)
 }
 int End_game(int kq, bool may)
 {
-    
+
     int a;
     _BufferInfo bf = GetConsoleSize();
     HideCursor(false);
@@ -408,29 +405,31 @@ bool win(int s[15][15], int x, int y) //xac dinh thang thua
     if (c1 + c2 >= 4 || h1 + h2 >= 4 || ch1 + ch2 >= 4 || cp1 + cp2 >= 4) return true;
     return false;
 }
-void Save_game(int s[15][15], bool current) //luu game
+void Save_game(vector<int> v, bool current) //luu game
 {
-    ofstream input("input.txt", ios::app);
-    ofstream output("output.txt", ios::app);
+    fstream input("input.txt", ios::app);
+    fstream output("output.txt", ios::app);
     if (current == true) {
         gotoXY(70, 24); cout << "Press name: ";
         string ten;
-        cin >> ten; input << ten << "\n";
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) output << s[i][j] << " ";
-            output << "\n";
+        getline(cin, ten); input << ten << "\n";
+        for (int i = 0; i < v.size(); i++) {
+            output << v[i] << " ";
         }
+        output << 100 << "\n";
     }
     input.close();
 }
-void Load_game(int n, int ss[15][15]) //tai game
+void Load_game(int n, vector<int>& v) //tai game
 {
-    int s[150][15];
-    ifstream output("output.txt");
-    for (int i = 0; i < 15 * (n + 1); i++)
-        for (int j = 0; j < 15; j++) output >> s[i][j];
-    for (int i = 15 * n; i < 15 * n + 15; i++)
-        for (int j = 0; j < 15; j++) ss[j][i - 15 * n] = s[i][j];
+    fstream output("output.txt");
+    for (int i = 0; i < n; i++) output.ignore(1000, '\n');
+    int i;
+    while (1) {
+        output >> i;
+        if (i == 100) return;
+        v.push_back(i);
+    }
 }
 
 void line_up(int x, int y, int w) {
@@ -471,6 +470,29 @@ void bangchon() {
     line_bot(43, 27, 30);
     line_down(43, 29, 30);
 }
+void xoagame(int n)
+{
+    vector<string> v, v2;
+    fstream input("input.txt");
+    fstream output("output.txt");
+    for (int i = 0; i < 10; i++) {
+        string s, t;
+        getline(input, s);
+        getline(output, t);
+        if (s.empty() == 0) v.push_back(s);
+        if (t.empty() == 0) v2.push_back(t);
+    }
+    input.close(); output.close();
+    v.erase(v.begin() + n);
+    v2.erase(v2.begin() + n);
+    fstream input2("input.txt", ios::out);
+    fstream output2("output.txt", ios::out);
+    for (int i = 0; i < v.size(); i++) {
+        input2 << v[i] << "\n";
+        output2 << v2[i] << "\n";
+    }
+    input2.close(); output2.close();
+}
 int f_load() //tuy chon tai game
 {
     system("cls");
@@ -482,14 +504,23 @@ int f_load() //tuy chon tai game
         for (int j = 4; j <= 20; j += 2) line_bot(35, j, 40);
         line_down(35, 22, 40);
         gotoXY(41, 3 + i * 2);
-        input >> s; if (s.size() == 0) continue;
+        getline(input, s); if (s.size() == 0) break;
         z++;
         cout << i << ". "; cout << s;
         gotoXY(41, 5 + i * 2);
     }
     gotoXY(41, 1); cout << "Press from 0 to " << z - 1 << " to choose game.";
+    gotoXY(41, 24); cout << " Press F to delete game.";
     char key = _getch();
     if (key >= 48 && key < 48 + z) return (key - 48);
+    else if (key == 70 || key == 102) {
+        cout << "Press from 0 to " << z - 1 << " to choose game to delete: ";
+        char key = _getch();
+        if (key >= 48 && key < 48 + z) xoagame(key - 48);
+        gotoXY(41, 25); cout << "Game " << key - 48 << " has been deleted!";
+        Sleep(1000); system("cls");
+        return -1;
+    }
     else {
         system("cls");
         return -1;
@@ -519,31 +550,45 @@ void nhapnhay(int s[15][15])
         x++;
     }
 }
-int dogame(int s[15][15], bool cur, bool may) //thuc hien game
+void load_to(vector<int>& v, bool& check, int s[15][15], int& xx, int& oo)
+{
+    if (v.size() > 0) {
+        if (v[2] == -1) check = !check;
+        for (int i = 0; i < v.size(); i += 3) {
+            if (v[i + 2] == 1) {
+                gotoXY(v[i], v[i + 1]);
+                set_color(4); cout << "X";
+                s[(v[i] - 3) / 4][(v[i + 1] - 1) / 2] = 1;
+                xx++;
+            }
+            else {
+                gotoXY(v[i], v[i + 1]);
+                set_color(1); cout << "O";
+                s[(v[i] - 3) / 4][(v[i + 1] - 1) / 2] = -1;
+                oo++;
+            }
+            check = !check;
+            Sleep(200);
+        }
+    }
+}
+int dogame(vector<int> v, bool cur, bool may) //thuc hien game
 {
     set_color(0);
     //ShowScrollbar(0);
     gotoXY(1, 1);
     char key;
+    int s[15][15] = {};
     int x = 3, y = 1;
     int xx = 0, oo = 0; //dem luot di
     bool check = cur;
-    for (int i = 0; i < 15; i++) // tai thong tin game (neu la load game)
-        for (int j = 0; j < 15; j++)
-            if (s[i][j] == -1 || s[i][j] == 1) {
-                if (s[i][j] == -1) oo++;
-                if (s[i][j] == 1) xx++;
-                check = !check;
-            }
+    load_to(v, check, s, xx, oo);
     gotoXY(70, 22); cout << "Press Backspace to save game and cancel";
     gotoXY(70, 2); cout << "Number of moves: ";
     gotoXY(70, 3); cout << "X: " << xx;
     gotoXY(70, 4); cout << "O: " << oo;
     while (1) { //bat dau choi
-        if (xx + oo == 225) {
-            gotoXY(0, 41); cout << "Draw";
-            return 0;
-        }
+        if (xx + oo == 225)  return 0;
         if (check == true) {
             set_color(4);
             ve_x_o(0);
@@ -562,6 +607,7 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
                 else { gotoXY(x - 4, y); x -= 4; }
                 if (s[(x - 3) / 4][(y - 1) / 2] == 0) {
                     oo++;
+                    v.push_back(x); v.push_back(y); v.push_back(-1);
                     gotoXY(70, 4); cout << "O: " << oo;
                     gotoXY(x, y);
                     cout << 'O'; s[(x - 3) / 4][(y - 1) / 2] = -1;
@@ -580,18 +626,19 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
             continue;
         }
         key = _getch();
-        if (key == 32) return 2;
+        if (key == 32) return 2; //choi lai
         if (key == 8) { //luu game
-            Save_game(s, true); return 3;
+            Save_game(v, true); return 3;
         }
-        if (key == 97 && x > 3) { gotoXY(x - 4, y); x -= 4; }
-        if (key == 119 && y > 1) { gotoXY(x, y - 2); y -= 2; }
-        if (key == 100 && x < 59) { gotoXY(x + 4, y); x += 4; }
-        if (key == 115 && y < 29) { gotoXY(x, y + 2); y += 2; }
+        if ((key == 97 || key == 65) && x > 3) { gotoXY(x - 4, y); x -= 4; }
+        if ((key == 119 || key == 87) && y > 1) { gotoXY(x, y - 2); y -= 2; }
+        if ((key == 100 || key == 68) && x < 59) { gotoXY(x + 4, y); x += 4; }
+        if ((key == 115 || key == 83) && y < 29) { gotoXY(x, y + 2); y += 2; }
         if (key == 13 && s[(x - 3) / 4][(y - 1) / 2] == 0) {
             check = !check;
             if (check == false) { //nuoc di cua X
                 xx++;
+                v.push_back(x); v.push_back(y); v.push_back(1);
                 gotoXY(70, 3); cout << "X: " << xx;
                 gotoXY(x, y);
                 cout << 'X'; s[(x - 3) / 4][(y - 1) / 2] = 1;
@@ -602,6 +649,7 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
             }
             else if (may == true) { // nuoc di cua O
                 oo++;
+                v.push_back(x); v.push_back(y); v.push_back(-1);
                 gotoXY(70, 4); cout << "O: " << oo;
                 gotoXY(x, y);
                 cout << 'O'; s[(x - 3) / 4][(y - 1) / 2] = -1;
@@ -611,12 +659,9 @@ int dogame(int s[15][15], bool cur, bool may) //thuc hien game
                 }
             }
         }
-        if (key == 27) {
-            return 2;
-        } //thoat game
+        if (key == 27) return 4; //thoat game
     }
 }
-
 
 //Ve bang phu
 void bangphu() {
@@ -689,57 +734,39 @@ void banggame() {
     bangphu();
 }
 
-int Start_game(int& kq, int n, bool may) //khoi dong game
+void Start_game(int& kq, int n, bool may) //khoi dong game
 {
     FixConsoleWindow();
-    int s[15][15] = {}, x = 0, o = 0;
+    vector<int> v;
+    int x = 0, o = 0;
     bool cur = true;
-    system("cls");
-    banggame();
-    if (n > -1) { //tai game (neu co)
-        Load_game(n, s);
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                gotoXY(3 + j * 4, i * 2 + 1);
-                if (s[i][j] == 1) {
-                    set_color(4);
-                    cout << "X";
-                }
-                else if (s[i][j] == -1) {
-                    set_color(1);
-                    cout << "O";
-                }
-                else cout << " ";
-            }
-            cout << "\n";
-        }
-    }
-    int ss[15][15];
-    for (int i = 0; i < 15; i++)
-        for (int j = 0; j < 15; j++) ss[j][i] = s[i][j];
-    for (int i = 0; i < 15; i++)
-        for (int j = 0; j < 15; j++) s[i][j] = ss[i][j];
+    if (n > -1)  //tai game (neu co)
+        Load_game(n, v);
+    gotoXY(90, 1);
     while (1) { //vong lap choi game
+        system("cls");
+        banggame();
         gotoXY(90, 5); cout << "Player X win: " << x; //dem so lan X win
         gotoXY(90, 7); cout << "Player O win: " << o; //dem so lan O win
         gotoXY(70, 23); cout << "Press Space to play again.";
         gotoXY(70, 27); cout << "Press ESC to return to menu.";
-        kq = dogame(s, cur, may);
-        if (kq == 1) x++; else if (kq < 0) o++;
-        if (kq == 2 || kq == 3) {
+        kq = dogame(v, cur, may);
+        if (kq == 1) x++;
+        else if (kq < 0) o++;
+        if (kq == 2) {
+            v.clear(); continue;
+        }
+        if (kq == 3 || kq == 4) {
             system("cls");
-            return kq;
+            break;
         }
         int a = End_game(kq, may);
         if (a == 1) {
             n = -1; cur = !cur;
-            for (int i = 0; i < 15; i++)
-                for (int j = 0; j < 15; j++) s[i][j] = 0;
-            system("cls");
-            banggame();
+            v.clear();
             continue;
         }
-        else return kq;
+        else break;
     }
 }
 
@@ -774,13 +801,12 @@ void dongchuchinh() {
     printf("    _/_/_/_/_/_/_/_/_/"); set_color(1); printf("        _/_/_/_/_/_/_/_/_/_/_/_/"); set_color(2); printf("   _/_/                    "); set_color(6); printf("_/_/_/_/_/_/_/_/_/_/_/\n"); set_color(4);
 }
 
-
-
 //MỤC 5. HELP
 void _help() {
     system("cls");
     printf("\n\n\n\t\t\t\t\t\t  CONTROL:");
     printf("\n\n\t\tUsing 'W', 'A', 'S', 'D' button to go up, left, down, right;\n\t\t press Enter to play");
+    printf("\n\n\t\tTurn on English keyboard to play");
     printf("\n\n\n\t\t\t\t\t\tINSTRUCTION:\n");
     printf("\n\n\t\t1. Caro is a 2-player game. Players alternate turns marking an X or O on an\n\t\t empty square on the board. The X player go first\n");
     printf("\n\t\t2. The winner is the first player to form an unbroken line of five marks of\n\t\t their color horizontally, vertically, or diagonally.\n");
@@ -882,19 +908,19 @@ void menu() {
             blink_text(49, 16, "PLAYER VS COMPUTER");
             kq = 2;
             system("cls");
-            kq = Start_game(kq, -1, false);
+            Start_game(kq, -1, false);
             break;
         case 2:
             blink_text(50, 18, "PLAYER VS PLAYER");
             kq = 2;
             system("cls");
-            kq = Start_game(kq, -1, true);
+            Start_game(kq, -1, true);
             break;
         case 3:
             blink_text(54, 20, "LOAD GAME");
             temp = f_load();
             if (temp == -1) break;
-            kq = Start_game(kq, temp, true);
+            Start_game(kq, temp, true);
             break;
         case 4:
             switch (a_th) {
@@ -940,10 +966,10 @@ void menu() {
 }
 
 int main() {
-    a_th = 1;
-    _sound();
+    SetConsoleTitle(L"Game Caro");
     CreateConsoleWindow(1100, 700);
     FixConsoleWindow();
+    a_th = 1;
     _sound();
     while (1) {
         menu();
