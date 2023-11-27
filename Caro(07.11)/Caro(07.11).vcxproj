@@ -130,8 +130,6 @@
     <ClCompile Include="Caro(07.11).cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\..\..\..\Desktop\input.txt" />
-    <Text Include="..\..\..\..\Desktop\output.txt" />
     <Text Include="D:\endgamefiles\Continue.txt" />
     <Text Include="D:\endgamefiles\Draw.txt" />
     <Text Include="D:\endgamefiles\No.txt" />

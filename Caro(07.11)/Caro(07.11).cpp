@@ -143,6 +143,7 @@ void _sound() {
     else if (a_th == 2) PlaySound(TEXT("win.wav"), NULL, SND_ASYNC);
     else if (a_th == 3) PlaySound(TEXT("lose.wav"), NULL, SND_ASYNC);
     else if (a_th == 4)PlaySound(TEXT("draw.wav"), NULL, SND_ASYNC);
+    else if (a_th == 5)PlaySound(TEXT("ingame.wav"), NULL, SND_ASYNC);
     else PlaySound(NULL, NULL, SND_ASYNC);
 }
 vector<string> ReadFile(string filename)
@@ -291,14 +292,14 @@ int AskContinueBox(bool may)
     DrawFromFile("No.txt", 14 * 16 + 0, (bf.col + 15) / 2, (bf.row - 20));
     int Action = AskContinueAction();
     if (Action == 1) {
-        a_th = 1;
+        a_th = 5*(a_th!=0);
         _sound();
         system("cls");
         HideCursor(true);
         return 1;
     }
     else if (Action == 2) {
-        a_th = 1;
+        a_th = 1 * (a_th != 0);
         _sound();
         system("cls");
         HideCursor(true);
@@ -314,35 +315,35 @@ int End_game(int kq, bool may)
     switch (kq)
     {
     case 1:
-        a_th = 2;
+        a_th = 2 * (a_th != 0);
         _sound();
         system("cls");
         DrawFromFile("XWin.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
         a = AskContinueBox(may);
         break;
     case 0:
-        a_th = 4;
+        a_th = 4 * (a_th != 0);
         _sound();
         system("cls");
         DrawFromFile("Draw.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
         a = AskContinueBox(may);
         break;
     case -1:
-        a_th = 3;
+        a_th = 3 * (a_th != 0);
         _sound();
         system("cls");
         DrawFromFile("OWin.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
         a = AskContinueBox(may);
         break;
     case 2:
-        a_th = 2;
+        a_th = 2 * (a_th != 0);
         _sound();
         system("cls");
         DrawFromFile("PWin.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
         a = AskContinueBox(may);
         break;
     case -2:
-        a_th = 3;
+        a_th = 3 * (a_th != 0);
         _sound();
         system("cls");
         DrawFromFile("PLose.txt", 240, bf.col / 2 - 30, bf.row / 2 - 10);
@@ -419,6 +420,8 @@ void Save_game(vector<int> v, bool current) //luu game
         output << 100 << "\n";
     }
     input.close();
+    a_th = 1*(a_th!=0);
+    _sound();
 }
 void Load_game(int n, vector<int>& v) //tai game
 {
@@ -430,6 +433,8 @@ void Load_game(int n, vector<int>& v) //tai game
         if (i == 100) return;
         v.push_back(i);
     }
+    a_th = 5*(a_th!=0);
+    _sound();
 }
 
 void line_up(int x, int y, int w) {
@@ -736,6 +741,8 @@ void banggame() {
 
 void Start_game(int& kq, int n, bool may) //khoi dong game
 {
+    a_th = 5 * (a_th != 0);
+    _sound();
     FixConsoleWindow();
     vector<int> v;
     int x = 0, o = 0;
