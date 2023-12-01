@@ -292,7 +292,7 @@ int AskContinueBox(bool may)
     DrawFromFile("No.txt", 14 * 16 + 0, (bf.col + 15) / 2, (bf.row - 20));
     int Action = AskContinueAction();
     if (Action == 1) {
-        a_th = 5*(a_th!=0);
+        a_th = 5 * (a_th != 0);
         _sound();
         system("cls");
         HideCursor(true);
@@ -410,15 +410,15 @@ void Save_game(vector<int> v, bool current) //luu game
 {
     fstream input("input.txt", ios::app);
     fstream output("output.txt", ios::app);
-    if (current == true) {
-        gotoXY(70, 24); cout << "Press name: ";
-        string ten;
-        getline(cin, ten); input << ten << "\n";
-        for (int i = 0; i < v.size(); i++) {
-            output << v[i] << " ";
-        }
-        output << 100 << "\n";
+    gotoXY(70, 24); cout << "Press name: ";
+    string ten;
+    if (current == false) input << '*';
+    getline(cin, ten); input << ten << "\n";
+    for (int i = 0; i < v.size(); i++) {
+        output << v[i]<<" ";
     }
+    if (current == false) output << "200 ";
+    output << 100 << "\n";
     input.close();
     a_th = 1 * (a_th != 0);
     _sound();
@@ -426,7 +426,7 @@ void Save_game(vector<int> v, bool current) //luu game
 void Load_game(int n, vector<int>& v) //tai game
 {
     fstream output("output.txt");
-    for (int i = 0; i < n; i++) output.ignore(1000, '\n');
+    for (int i = 0; i < n; i++) output.ignore(10000, '\n');
     int i;
     while (1) {
         output >> i;
@@ -631,7 +631,7 @@ int dogame(vector<int> v, bool cur, bool may) //thuc hien game
         key = _getch();
         if (key == 32) return 2; //choi lai
         if (key == 8) { //luu game
-            Save_game(v, true); return 3;
+            Save_game(v, may); return 3;
         }
         if ((key == 97 || key == 65) && x > 3) { gotoXY(x - 4, y); x -= 4; }
         if ((key == 119 || key == 87) && y > 1) { gotoXY(x, y - 2); y -= 2; }
@@ -749,12 +749,19 @@ void Start_game(int& kq, int n, bool may) //khoi dong game
     vector<int> v;
     int x = 0, o = 0;
     bool cur = true;
-    if (n > -1)  //tai game (neu co)
+    if (n > -1) {  //tai game (neu co)
         Load_game(n, v);
+        if (v[v.size() - 1] == 200) {
+            may = false;
+            v.pop_back();
+        }
+    }
     gotoXY(90, 1);
     while (1) { //vong lap choi game
         system("cls");
         banggame();
+        gotoXY(90, 3); cout << "MODE: Pv";
+        if (may == true) cout << "P"; else cout << "Computer";
         gotoXY(90, 5); cout << "Player X win: " << x; //dem so lan X win
         gotoXY(90, 7); cout << "Player O win: " << o; //dem so lan O win
         gotoXY(70, 23); cout << "Press Space to play again.";
