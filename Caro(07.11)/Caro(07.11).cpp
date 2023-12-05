@@ -139,12 +139,20 @@ _BufferInfo GetConsoleSize()
 }
 int a_th;
 void _sound() {
-    if (a_th == 1) PlaySound(TEXT("01.-Main-Menu.wav"), NULL, SND_ASYNC | SND_LOOP);
-    else if (a_th == 2) PlaySound(TEXT("win.wav"), NULL, SND_ASYNC);
-    else if (a_th == 3) PlaySound(TEXT("lose.wav"), NULL, SND_ASYNC);
-    else if (a_th == 4)PlaySound(TEXT("draw.wav"), NULL, SND_ASYNC);
-    else if (a_th == 5)PlaySound(TEXT("ingame.wav"), NULL, SND_ASYNC);
-    else PlaySound(NULL, NULL, SND_ASYNC);
+   switch (a_th) {
+case 1: PlaySound(TEXT("01.-Main-Menu.wav"), NULL, SND_ASYNC | SND_LOOP);
+    break;
+case 2: PlaySound(TEXT("win.wav"), NULL, SND_ASYNC);
+    break;
+case 3: PlaySound(TEXT("lose.wav"), NULL, SND_ASYNC);
+    break;
+case 4: PlaySound(TEXT("draw.wav"), NULL, SND_ASYNC);
+    break;
+case 5: PlaySound(TEXT("ingame.wav"), NULL, SND_ASYNC);
+    break;
+default: PlaySound(NULL, NULL, SND_ASYNC);
+    break;
+}
 }
 vector<string> ReadFile(string filename)
 {
