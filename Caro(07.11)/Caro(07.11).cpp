@@ -663,7 +663,7 @@ int dogame(vector<int> v, bool cur, bool may) //thuc hien game
             }
         }
         if (key == 27) {
-            a_th = 1;
+           a_th = 1 * (a_th != 0);
             _sound();
             return 4;
         } //thoat game
